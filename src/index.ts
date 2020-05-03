@@ -24,7 +24,7 @@ export const createTimestampsEvenly = (
   }
 
   const trackPoints = trackSegment.querySelectorAll("trkpt");
-  const timeStamps = getDistributedTimeStamps(
+  const timeStamps = getUniformDistribution(
     trackPoints.length,
     startTime,
     endTime,
@@ -41,14 +41,22 @@ export const createTimestampsEvenly = (
     serializer.serializeToString(gpxDoc);
 };
 
-export const getDistributedTimeStamps = (
+/**
+ * Get an array of size `count` with evenly distributed numbers 
+ * from `start` to `end` (both inclusive).
+ * 
+ * @param count number of steps
+ * @param intervalStart start of interval
+ * @param intervalEnd end of interval
+ */
+export const getUniformDistribution = (
   count: number,
-  startTime: number,
-  endTime: number,
+  intervalStart: number,
+  intervalEnd: number,
 ) => {
-  if (endTime < startTime) {
+  if (intervalEnd < intervalStart) {
     console.error(
-      `end time (${endTime}) is smaller than start time (${startTime})`,
+      `end time (${intervalEnd}) is smaller than start time (${intervalStart})`,
     );
     return [];
   }
@@ -56,20 +64,20 @@ export const getDistributedTimeStamps = (
   if (count === 0) {
     return [];
   } else if (count === 1) {
-    return [startTime];
+    return [intervalStart];
   }
 
-  const milliSecondDiff = endTime - startTime;
+  const milliSecondDiff = intervalEnd - intervalStart;
 
   const timeStep = Math.floor(milliSecondDiff / (count - 1));
 
   const timeStamps = Array(count)
     .fill(0)
-    .map((_, index) => startTime + index * timeStep);
+    .map((_, index) => intervalStart + index * timeStep);
 
   if (count > 1) {
     // Last time stamp must be end time
-    timeStamps[timeStamps.length - 1] = endTime;
+    timeStamps[timeStamps.length - 1] = intervalEnd;
   }
 
   return timeStamps;
