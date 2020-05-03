@@ -1,4 +1,4 @@
-import { createTimestampsEvenly, getDistributedTimeStamps } from "../src/index";
+import { createTimestampsEvenly, getUniformDistribution } from "../src/index";
 
 const startExampleTime = 1588100000000;
 const endExampleTime = 1588490300000;
@@ -52,7 +52,7 @@ describe("evenly distributed timestamps", () => {
   });
 
   test("file with five track points", () => {
-    const timeStamps = getDistributedTimeStamps(
+    const timeStamps = getUniformDistribution(
       5,
       startExampleTime,
       endExampleTime,
@@ -77,17 +77,17 @@ describe("evenly distributed timestamps", () => {
 
 describe("helper function for creating distributed timestamps", () => {
   test("it returns correct for zero timestamps", () => {
-    expect(getDistributedTimeStamps(0, 10, 110)).toHaveLength(0);
+    expect(getUniformDistribution(0, 10, 110)).toHaveLength(0);
   });
   test("it returns correct for one timestamp", () => {
-    expect(getDistributedTimeStamps(1, 10, 11)).toEqual([10]);
+    expect(getUniformDistribution(1, 10, 11)).toEqual([10]);
   });
 
   test("that it returns correct for start and end when multiple timestamps", () => {
     const count = 5;
     const startTime = 20;
     const endTime = 100;
-    const timestamps = getDistributedTimeStamps(count, startTime, endTime);
+    const timestamps = getUniformDistribution(count, startTime, endTime);
     expect(timestamps).toHaveLength(count);
     expect(timestamps[0]).toEqual(startTime);
     expect(timestamps[timestamps.length - 1]).toEqual(endTime);
@@ -95,7 +95,7 @@ describe("helper function for creating distributed timestamps", () => {
 
   test("it returns correct for multiple timestamps", () => {
     const count = 5;
-    expect(getDistributedTimeStamps(count, 20, 100)).toEqual([
+    expect(getUniformDistribution(count, 20, 100)).toEqual([
       20,
       40,
       60,
