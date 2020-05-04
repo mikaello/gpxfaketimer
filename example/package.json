@@ -5,7 +5,7 @@
   "main": "helper.ts",
   "type": "module",
   "scripts": {
-    "build": "gulp prestart",
+    "build": "yarn install && gulp prestart",
     "prestart": "yarn build",
     "start": "servor dist index.html 8090 --reload",
     "dev": "gulp",

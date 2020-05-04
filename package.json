@@ -1,6 +1,6 @@
 {
   "name": "@mikaello/gpxfaketimer",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Create (or modify) timestamps in an GPX file",
   "main": "dist/index.js",
   "module": "dist/index.js",
