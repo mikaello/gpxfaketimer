@@ -36,15 +36,23 @@ export const createTimestampsEvenly = (
   });
 
   const serializer = new XMLSerializer();
+  const formatedGpx = serializer.serializeToString(gpxDoc);
 
-  return `<?xml version="1.0" encoding="${gpxDoc.inputEncoding}"?>\n` +
-    serializer.serializeToString(gpxDoc);
+  if (formatedGpx.startsWith("<?xml")) {
+    return formatedGpx;
+  } else {
+    // JSDom handles this differently than browser
+    return (
+      `<?xml version="1.0" encoding="${gpxDoc.inputEncoding}"?>\n` +
+      serializer.serializeToString(gpxDoc)
+    );
+  }
 };
 
 /**
- * Get an array of size `count` with evenly distributed numbers 
+ * Get an array of size `count` with evenly distributed numbers
  * from `start` to `end` (both inclusive).
- * 
+ *
  * @param count number of steps
  * @param intervalStart start of interval
  * @param intervalEnd end of interval

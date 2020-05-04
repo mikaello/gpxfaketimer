@@ -1,0 +1,48 @@
+<html>
+  <head>
+    <title>Test of fake timer</title>
+    <style>
+      .gpx-example-code {
+        border: 2px solid black;
+        padding: 10px;
+      }
+      #gpx-with-timestamp {
+        visibility: hidden;
+      }
+    </style>
+
+    <script type="module">
+      import { generateTimestamps } from "./helper.js";
+      generateTimestamps();
+    </script>
+  </head>
+  <body>
+    Example of GPX before:
+    <pre id="gpx-no-timestamp" class="gpx-example-code">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;gpx version="1.0"&gt;
+    &lt;name&gt;Example gpx&lt;/name&gt;
+    &lt;trk&gt;
+        &lt;name&gt;Example gpx&lt;/name&gt;
+        &lt;number&gt;1&lt;/number&gt;
+        &lt;trkseg&gt;
+            &lt;trkpt lat="46.57608333" lon="8.89241667"&gt;&lt;ele&gt;2376&lt;/ele&gt;&lt;/trkpt&gt;
+            &lt;trkpt lat="46.57619444" lon="8.89252778"&gt;&lt;ele&gt;2375&lt;/ele&gt;&lt;/trkpt&gt;
+            &lt;trkpt lat="46.57641667" lon="8.89266667"&gt;&lt;ele&gt;2372&lt;/ele&gt;&lt;/trkpt&gt;
+            &lt;trkpt lat="46.57650000" lon="8.89280556"&gt;&lt;ele&gt;2373&lt;/ele&gt;&lt;/trkpt&gt;
+            &lt;trkpt lat="46.57638889" lon="8.89302778"&gt;&lt;ele&gt;2374&lt;/ele&gt;&lt;/trkpt&gt;
+            &lt;trkpt lat="46.57652778" lon="8.89322222"&gt;&lt;ele&gt;2375&lt;/ele&gt;&lt;/trkpt&gt;
+            &lt;trkpt lat="46.57661111" lon="8.89344444"&gt;&lt;ele&gt;2376&lt;/ele&gt;&lt;/trkpt&gt;
+        &lt;/trkseg&gt;
+    &lt;/trk&gt;
+&lt;/gpx&gt;
+    </pre>
+
+    <p>
+      Push button to generate GPX with timestamps from now and hour onwards
+      <button id="generate-timestamps-btn">Generate GPX with timestamps</button>
+    </p>
+
+    <pre id="gpx-with-timestamp" class="gpx-example-code"></pre>
+  </body>
+</html>
