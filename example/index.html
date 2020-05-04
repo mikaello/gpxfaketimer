@@ -17,8 +17,17 @@
     </script>
   </head>
   <body>
-    Example of GPX before:
-    <pre id="gpx-no-timestamp" class="gpx-example-code">
+    <h1>GPX fake timer</h1>
+    <p>Put your <code>&lt;time&gt;</code>-free GPX in here:</p>
+    <textarea
+      id="gpx-no-timestamp"
+      autofocus="true"
+      required="true"
+      wrap="off"
+      class="gpx-example-code"
+      cols="100"
+      rows="30"
+    >
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;gpx version="1.0"&gt;
     &lt;name&gt;Example gpx&lt;/name&gt;
@@ -36,13 +45,19 @@
         &lt;/trkseg&gt;
     &lt;/trk&gt;
 &lt;/gpx&gt;
-    </pre>
+    </textarea>
 
     <p>
-      Push button to generate GPX with timestamps from now and hour onwards
+      Generate GPX with timestamps from now and hour onwards
       <button id="generate-timestamps-btn">Generate GPX with timestamps</button>
     </p>
 
-    <pre id="gpx-with-timestamp" class="gpx-example-code"></pre>
+    <textarea
+      id="gpx-with-timestamp"
+      class="gpx-example-code"
+      wrap="off"
+      cols="100"
+      rows="30"
+    ></textarea>
   </body>
 </html>
