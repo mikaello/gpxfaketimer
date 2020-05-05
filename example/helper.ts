@@ -6,17 +6,31 @@ declare global {
   }
 }
 
+export const setDefaultDateTime = (elementId: string, date?: Date) => {
+  const now = date ? date : new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  const datetime = (<HTMLInputElement> document.getElementById(elementId));
+
+  datetime.value = now
+    .toJSON()
+    .substring(0, 16);
+};
+
 export const generateTimestamps = () => {
   const timestampButton = document.getElementById("generate-timestamps-btn");
 
   timestampButton.onclick = () => {
-    const gpx = (<HTMLTextAreaElement>(
+    const gpx = (<HTMLTextAreaElement> (
       document.getElementById("gpx-no-timestamp")
     )).value;
 
-    const now = new Date().valueOf();
+    const timeStart =
+      (<HTMLInputElement> document.getElementById("timestamp-start"));
+    const now = timeStart?.value
+      ? new Date(timeStart.value).valueOf()
+      : new Date().valueOf();
 
-    const gpxPaste = <HTMLTextAreaElement>(
+    const gpxPaste = <HTMLTextAreaElement> (
       document.getElementById("gpx-with-timestamp")
     );
 
