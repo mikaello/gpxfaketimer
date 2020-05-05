@@ -13,7 +13,7 @@ export const setDefaultDateTime = (elementId: string, date?: Date) => {
 
   datetime.value = now
     .toJSON()
-    .substring(0, 16);
+    .substring(0, 19);
 };
 
 export const generateTimestamps = () => {
