@@ -1,6 +1,12 @@
 # GPX fake timer
 
+[![npm](https://img.shields.io/npm/v/@mikaello/gpxfaketimer.svg?style=flat-square)](https://www.npmjs.com/package/@mikaello/gpxfaketimer)
+
 Create timestamps for every trackpoint in a GPX file.
+
+```shell
+yarn add @mikaello/gpxfaketimer
+```
 
 ## Example
 
