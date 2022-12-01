@@ -1,8 +1,8 @@
-const { src, dest, series, watch, task } = require("gulp");
-const ts = require("gulp-typescript");
-const rollup = require("rollup");
-const typescript = require("rollup-plugin-typescript2");
-const { nodeResolve } = require("@rollup/plugin-node-resolve");
+import { src, dest, series, watch, task } from "gulp";
+import ts from "gulp-typescript";
+import rollup from "rollup";
+import typescript from "rollup-plugin-typescript2";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
 
 const tsProjectLib = ts.createProject("../tsconfig.json", {
   rootDir: "../",
