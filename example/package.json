@@ -33,7 +33,7 @@
     "@types/node": "18.16.7",
     "gulp": "4.0.2",
     "gulp-typescript": "6.0.0-alpha.1",
-    "rollup": "3.21.4",
+    "rollup": "3.21.6",
     "rollup-plugin-typescript2": "0.34.1",
     "servor": "4.0.2",
     "ts-node": "10.9.1",
