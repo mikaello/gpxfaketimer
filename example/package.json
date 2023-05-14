@@ -40,6 +40,9 @@
     "tslib": "2.5.0",
     "typescript": "4.9.5"
   },
+  "resolutions": {
+    "gulp-typescript/source-map": "0.7.4"
+  },
   "dependencies": {
     "@mikaello/gpxfaketimer": "link:./.."
   }
