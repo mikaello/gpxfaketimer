@@ -35,7 +35,7 @@
     "proseWrap": "always"
   },
   "devDependencies": {
-    "@types/jest": "29.5.7",
+    "@types/jest": "29.5.8",
     "jest": "29.7.0",
     "jest-environment-jsdom": "^29.3.1",
     "ts-jest": "29.1.1",
