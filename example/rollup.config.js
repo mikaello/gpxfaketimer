@@ -9,4 +9,5 @@ export default {
     sourcemap: true,
   },
   plugins: [nodeResolve(), typescript()],
+  strictDeprecations: true,
 };
