@@ -30,7 +30,7 @@
   "homepage": "https://github.com/mikaello/gpxfaketimer#readme",
   "devDependencies": {
     "@rollup/plugin-node-resolve": "16.0.2",
-    "@types/node": "20.19.19",
+    "@types/node": "20.19.20",
     "gulp": "5.0.1",
     "gulp-typescript": "6.0.0-alpha.1",
     "rollup": "4.52.3",
