@@ -1,4 +1,6 @@
-import { createTimestampsEvenly, getUniformDistribution } from "../src/index";
+import { describe, test } from "node:test";
+import assert from "node:assert/strict";
+import { createTimestampsEvenly, getUniformDistribution } from "../src/index.ts";
 
 const startExampleTime = 1588100000000;
 const endExampleTime = 1588490300000;
@@ -42,13 +44,14 @@ describe("evenly distributed timestamps", () => {
   );
 
   test("file with only one point", () => {
-    expect(
+    assert.deepStrictEqual(
       createTimestampsEvenly(
         createGpxWithOneTrackPoint(),
         startExampleTime,
         endExampleTime,
       ),
-    ).toEqual(gpxOneTrackPointWithTimestamp);
+      gpxOneTrackPointWithTimestamp,
+    );
   });
 
   test("file with five track points", () => {
@@ -65,22 +68,23 @@ describe("evenly distributed timestamps", () => {
       `<time>${new Date(timeStamps[4]).toISOString()}</time>`,
     );
 
-    expect(
+    assert.deepStrictEqual(
       createTimestampsEvenly(
         createGpxWithFiveTrackPoints(),
         startExampleTime,
         endExampleTime,
       ),
-    ).toEqual(gpxFiveTrackPointsWithTimestamp);
+      gpxFiveTrackPointsWithTimestamp,
+    );
   });
 });
 
 describe("helper function for creating distributed timestamps", () => {
   test("it returns correct for zero timestamps", () => {
-    expect(getUniformDistribution(0, 10, 110)).toHaveLength(0);
+    assert.strictEqual(getUniformDistribution(0, 10, 110).length, 0);
   });
   test("it returns correct for one timestamp", () => {
-    expect(getUniformDistribution(1, 10, 11)).toEqual([10]);
+    assert.deepStrictEqual(getUniformDistribution(1, 10, 11), [10]);
   });
 
   test("that it returns correct for start and end when multiple timestamps", () => {
@@ -88,19 +92,18 @@ describe("helper function for creating distributed timestamps", () => {
     const startTime = 20;
     const endTime = 100;
     const timestamps = getUniformDistribution(count, startTime, endTime);
-    expect(timestamps).toHaveLength(count);
-    expect(timestamps[0]).toEqual(startTime);
-    expect(timestamps[timestamps.length - 1]).toEqual(endTime);
+    assert.strictEqual(timestamps.length, count);
+    assert.deepStrictEqual(timestamps[0], startTime);
+    assert.deepStrictEqual(timestamps[timestamps.length - 1], endTime);
   });
 
   test("it returns correct for multiple timestamps", () => {
     const count = 5;
-    expect(getUniformDistribution(count, 20, 100)).toEqual([
+    assert.deepStrictEqual(getUniformDistribution(count, 20, 100), [
       20,
       40,
       60,
       80,
       100,
-    ]);
-  });
+    ]);  });
 });
