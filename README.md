@@ -81,10 +81,8 @@ these extremeties.
 
 ## Develop
 
-You can use the [./example](./example) project to ease developing. If you run
-`npm start` from that folder, you will start a server running a small
-application which loads the code from this module. Run `npm run dev` in another
-terminal to start to continously watch the code and recompile (and reload
-server) when any code changes.
+You can use the [./example](./example) project to ease developing. Run
+`npm run dev` from that folder to start a Vite dev server that loads the code
+from this module with hot module replacement.
 
 Contributions are welcome :-)
