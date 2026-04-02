@@ -44,6 +44,6 @@
     "gulp-typescript/source-map": "0.7.6"
   },
   "dependencies": {
-    "@mikaello/gpxfaketimer": "link:./.."
+    "@mikaello/gpxfaketimer": "file:./.."
   }
 }
