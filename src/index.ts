@@ -155,10 +155,10 @@ export const createTimestampsEvenly = (
   });
 
   const serializer = new XMLSerializer();
-  const formatedGpx = serializer.serializeToString(gpxDoc);
+  const formattedGpx = serializer.serializeToString(gpxDoc);
 
-  if (formatedGpx.startsWith("<?xml")) {
-    return formatedGpx;
+  if (formattedGpx.startsWith("<?xml")) {
+    return formattedGpx;
   } else {
     // JSDom handles this differently than browser
     return (
