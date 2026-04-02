@@ -1,24 +1,16 @@
 {
   "compilerOptions": {
-    "incremental": true,
-    "target": "es2019",
-    "module": "esnext",
-    "sourceMap": true,
-    "outDir": "./dist",
-
-    "strict": false,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-
-    "moduleResolution": "node",
-    "baseUrl": "./",
-    "rootDir": "..",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "strict": true
   },
-  "ts-node": {
-    "moduleTypes": {
-      "gulpfile.ts": "cjs"
-    }
-  }
+  "include": ["**/*.ts"]
 }
