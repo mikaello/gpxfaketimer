@@ -1,4 +1,4 @@
-import { createTimestampsEvenly } from "@mikaello/gpxfaketimer";
+import { createTimestampsEvenly, createTimestampsFromSpeed } from "@mikaello/gpxfaketimer";
 
 declare global {
   interface Window {
@@ -98,8 +98,19 @@ export const generateTimestamps = () => {
       document.getElementById("gpx-with-timestamp")
     );
 
+    const mode = (<HTMLInputElement> document.querySelector('input[name="timing-mode"]:checked'))?.value ?? "evenly";
+
     try {
-      const timeGpx = createTimestampsEvenly(gpx, now, now + 60 * 60 * 1000);
+      let timeGpx: string;
+      if (mode === "speed") {
+        const speed = parseFloat(
+          (<HTMLInputElement> document.getElementById("speed-value")).value,
+        ) || 10;
+        const unit = (<HTMLSelectElement> document.getElementById("speed-unit")).value as "kmh" | "mph";
+        timeGpx = createTimestampsFromSpeed(gpx, now, speed, unit);
+      } else {
+        timeGpx = createTimestampsEvenly(gpx, now, now + 60 * 60 * 1000);
+      }
       gpxPaste.value = timeGpx;
     } catch (e) {
       const errorNode = document.createElement("p");
