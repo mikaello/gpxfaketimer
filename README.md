@@ -70,6 +70,33 @@ console.log(createTimestampsEvenly(exampleGpx, 0, 100000));
   returns the incoming `gpxContent` enriched with timestamps in every `trkpt`
   element. `startTime` and `endTime` are milliseconds since epoch.
 
+- _`createTimestampsFromSpeed(gpxContent: string, startTime: number, speed: number, unit?: "kmh" | "mph") => string`_:
+  returns the incoming `gpxContent` enriched with timestamps calculated from the
+  GPS distance between each track point at the given speed.
+  `unit` defaults to `"kmh"`.
+
+## CLI
+
+```shell
+npx @mikaello/gpxfaketimer input.gpx --output output.gpx
+```
+
+Options:
+
+| Flag | Description |
+|------|-------------|
+| `--output`, `-o` | Output file (default: stdout) |
+| `--start` | Start time as ISO 8601 or Unix ms (default: now) |
+| `--end` | End time for evenly distributed mode |
+| `--speed` | Speed value for distance-based timing |
+| `--unit` | Speed unit: `kmh` or `mph` (default: `kmh`, requires `--speed`) |
+| `--help`, `-h` | Show help |
+
+When `--speed` is provided, timestamps are calculated from GPS distances at that
+speed.
+Otherwise, timestamps are evenly distributed between `--start` and `--end`
+(default duration: 1 hour).
+
 ## Utility functions
 
 Not specific for GPX, but just as helper functions
