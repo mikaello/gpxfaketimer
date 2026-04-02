@@ -80,6 +80,24 @@
         >Start of timestamps:
         <input type="datetime-local" id="timestamp-start" required step="1" />
       </label>
+    </p>
+    <p>
+      <strong>Timing mode:</strong><br />
+      <label>
+        <input type="radio" name="timing-mode" value="evenly" checked />
+        Evenly distributed (1 hour duration)
+      </label><br />
+      <label>
+        <input type="radio" name="timing-mode" value="speed" />
+        Speed-based:
+        <input type="number" id="speed-value" value="10" min="0.1" step="0.1" style="width:5em" />
+        <select id="speed-unit">
+          <option value="kmh">km/h</option>
+          <option value="mph">mph</option>
+        </select>
+      </label>
+    </p>
+    <p>
       <button id="generate-timestamps-btn">Generate GPX with timestamps</button>
     </p>
 

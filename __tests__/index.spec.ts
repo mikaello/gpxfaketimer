@@ -1,6 +1,12 @@
 import { describe, test } from "node:test";
 import assert from "node:assert/strict";
-import { createTimestampsEvenly, getUniformDistribution } from "../src/index.ts";
+import {
+  createTimestampsEvenly,
+  createTimestampsFromSpeed,
+  getSpeedBasedTimestamps,
+  getUniformDistribution,
+  haversineDistanceMeters,
+} from "../src/index.ts";
 
 const startExampleTime = 1588100000000;
 const endExampleTime = 1588490300000;
@@ -106,4 +112,116 @@ describe("helper function for creating distributed timestamps", () => {
       80,
       100,
     ]);  });
+});
+
+describe("haversineDistanceMeters", () => {
+  test("returns 0 for identical points", () => {
+    assert.strictEqual(haversineDistanceMeters(10, 20, 10, 20), 0);
+  });
+
+  test("returns approximate distance between two known points", () => {
+    // Approx 1 degree of latitude ~ 111km
+    const dist = haversineDistanceMeters(0, 0, 1, 0);
+    assert.ok(dist > 110000 && dist < 112000, `Expected ~111km, got ${dist}`);
+  });
+});
+
+describe("getSpeedBasedTimestamps", () => {
+  test("single point returns only start time", () => {
+    assert.deepStrictEqual(getSpeedBasedTimestamps([], 1000, 10), [1000]);
+  });
+
+  test("calculates correct timestamps for known distance and speed in kmh", () => {
+    // 36 km/h = 10 m/s; 100 m takes 10 s = 10000 ms
+    const timestamps = getSpeedBasedTimestamps([100], 0, 36, "kmh");
+    assert.strictEqual(timestamps.length, 2);
+    assert.strictEqual(timestamps[0], 0);
+    assert.ok(Math.abs(timestamps[1] - 10000) < 1, `Expected 10000ms, got ${timestamps[1]}`);
+  });
+
+  test("calculates correct timestamps for known distance and speed in mph", () => {
+    // 1 mph = 0.44704 m/s; 44.704 m takes 100 s = 100000 ms
+    const timestamps = getSpeedBasedTimestamps([44.704], 0, 1, "mph");
+    assert.strictEqual(timestamps.length, 2);
+    assert.ok(Math.abs(timestamps[1] - 100000) < 1, `Expected 100000ms, got ${timestamps[1]}`);
+  });
+
+  test("timestamps are monotonically increasing", () => {
+    const distances = [10, 20, 15, 30];
+    const timestamps = getSpeedBasedTimestamps(distances, 1000, 10, "kmh");
+    assert.strictEqual(timestamps.length, 5);
+    for (let i = 1; i < timestamps.length; i++) {
+      assert.ok(timestamps[i] > timestamps[i - 1]);
+    }
+  });
+});
+
+describe("speed-based timestamps in GPX", () => {
+  test("single point gets start time", () => {
+    const result = createTimestampsFromSpeed(
+      createGpxWithOneTrackPoint(),
+      startExampleTime,
+      10,
+    );
+    assert.ok(result.includes(new Date(startExampleTime).toISOString()));
+  });
+
+  test("five points get increasing timestamps", () => {
+    const result = createTimestampsFromSpeed(
+      createGpxWithFiveTrackPoints(),
+      startExampleTime,
+      10,
+    );
+    const times = [...result.matchAll(/<time>([^<]+)<\/time>/g)].map(
+      (m) => new Date(m[1]).getTime(),
+    );
+    assert.strictEqual(times.length, 5);
+    assert.strictEqual(times[0], startExampleTime);
+    for (let i = 1; i < times.length; i++) {
+      assert.ok(times[i] > times[i - 1]);
+    }
+  });
+
+  test("higher speed produces shorter total duration", () => {
+    const slow = createTimestampsFromSpeed(
+      createGpxWithFiveTrackPoints(),
+      startExampleTime,
+      5,
+    );
+    const fast = createTimestampsFromSpeed(
+      createGpxWithFiveTrackPoints(),
+      startExampleTime,
+      20,
+    );
+    const lastTimeSlow = new Date(
+      [...slow.matchAll(/<time>([^<]+)<\/time>/g)].at(-1)![1],
+    ).getTime();
+    const lastTimeFast = new Date(
+      [...fast.matchAll(/<time>([^<]+)<\/time>/g)].at(-1)![1],
+    ).getTime();
+    assert.ok(lastTimeFast < lastTimeSlow);
+  });
+
+  test("mph and kmh produce different durations for same numeric speed", () => {
+    const kmh = createTimestampsFromSpeed(
+      createGpxWithFiveTrackPoints(),
+      startExampleTime,
+      10,
+      "kmh",
+    );
+    const mph = createTimestampsFromSpeed(
+      createGpxWithFiveTrackPoints(),
+      startExampleTime,
+      10,
+      "mph",
+    );
+    const lastKmh = new Date(
+      [...kmh.matchAll(/<time>([^<]+)<\/time>/g)].at(-1)![1],
+    ).getTime();
+    const lastMph = new Date(
+      [...mph.matchAll(/<time>([^<]+)<\/time>/g)].at(-1)![1],
+    ).getTime();
+    // 10 mph > 10 km/h, so mph should finish sooner
+    assert.ok(lastMph < lastKmh);
+  });
 });
