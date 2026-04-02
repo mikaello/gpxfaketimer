@@ -9,17 +9,41 @@
       #gpx-with-timestamp {
         visibility: hidden;
       }
+      #drop-zone {
+        border: 2px dashed #888;
+        border-radius: 6px;
+        padding: 16px 24px;
+        display: inline-block;
+        cursor: pointer;
+        color: #444;
+        margin-bottom: 8px;
+      }
+      #drop-zone.drag-over {
+        border-color: #0066cc;
+        background-color: #e8f0fe;
+        color: #0066cc;
+      }
     </style>
 
     <script type="module">
-      import { generateTimestamps, setDefaultDateTime } from "./helper.ts";
+      import { generateTimestamps, setDefaultDateTime, setupFileUpload, setupDownload } from "./helper.ts";
       generateTimestamps();
       setDefaultDateTime("timestamp-start");
+      setupFileUpload();
+      setupDownload();
     </script>
   </head>
   <body>
     <h1>GPX fake timer</h1>
     <p>Put your <code>&lt;time&gt;</code>-free GPX in here:</p>
+
+    <p>
+      <label id="drop-zone" for="gpx-file-input">
+        Drag and drop a .gpx file here, or click to browse
+        <input type="file" id="gpx-file-input" accept=".gpx" style="display:none" />
+      </label>
+    </p>
+
     <textarea
       id="gpx-no-timestamp"
       autofocus="true"
@@ -66,5 +90,9 @@
       cols="100"
       rows="30"
     ></textarea>
+
+    <p>
+      <button id="download-btn">Download GPX with timestamps</button>
+    </p>
   </body>
 </html>
