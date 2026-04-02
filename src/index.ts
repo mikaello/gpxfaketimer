@@ -16,23 +16,25 @@ export const createTimestampsEvenly = (
     throw new Error("Could not parse GPX content");
   }
 
-  const track = gpxDoc.documentElement.querySelector("trk");
-  const trackSegment = track?.querySelector("trkseg");
+  const track = gpxDoc.documentElement.getElementsByTagName("trk").item(0);
+  const trackSegment =
+    track?.getElementsByTagName("trkseg").item(0) ?? null;
 
   if (trackSegment == null) {
     return gpxContent;
   }
 
-  const trackPoints = trackSegment.querySelectorAll("trkpt");
+  const trackPoints = trackSegment.getElementsByTagName("trkpt");
   const timeStamps = getUniformDistribution(
     trackPoints.length,
     startTime,
     endTime,
   );
 
-  trackPoints.forEach((point, index) => {
-    const time = new Date(timeStamps[index]).toISOString();
-    point.insertAdjacentHTML("beforeend", `<time>${time}</time>`);
+  Array.from(trackPoints).forEach((point, index) => {
+    const timeEl = gpxDoc.createElement("time");
+    timeEl.textContent = new Date(timeStamps[index]).toISOString();
+    point.appendChild(timeEl);
   });
 
   const serializer = new XMLSerializer();

@@ -9,7 +9,7 @@
     "clean": "rm -rf dist/",
     "build": "tsc -b",
     "prepublishOnly": "yarn build",
-    "test": "jest"
+    "test": "node --import './__tests__/setup.ts' --test '__tests__/**/*.spec.ts'"
   },
   "author": "mikaello",
   "license": "GPL-3.0",
@@ -26,7 +26,6 @@
     "gpx",
     "timestamps"
   ],
-  "dependencies": {},
   "browserslist": [
     "last 1 Chrome versions"
   ],
@@ -35,10 +34,7 @@
     "proseWrap": "always"
   },
   "devDependencies": {
-    "@types/jest": "30.0.0",
-    "jest": "30.3.0",
-    "jest-environment-jsdom": "^30.0.0",
-    "ts-jest": "29.4.6",
+    "@xmldom/xmldom": "^0.9.9",
     "typescript": "5.9.3"
   }
 }
