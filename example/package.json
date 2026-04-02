@@ -5,8 +5,8 @@
   "main": "helper.ts",
   "type": "module",
   "scripts": {
-    "build": "yarn install && gulp prestart",
-    "prestart": "yarn build",
+    "build": "npm install && gulp prestart",
+    "prestart": "npm run build",
     "start": "servor dist index.html 8080 --reload",
     "dev": "gulp",
     "test": "echo \"Error: no test specified\" && exit 1"
