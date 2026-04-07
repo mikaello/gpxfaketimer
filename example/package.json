@@ -24,7 +24,7 @@
   "homepage": "https://github.com/mikaello/gpxfaketimer#readme",
   "devDependencies": {
     "typescript": "6.0.2",
-    "vite": "6.4.1"
+    "vite": "6.4.2"
   },
   "dependencies": {
     "@mikaello/gpxfaketimer": "file:../"
