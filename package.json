@@ -37,7 +37,7 @@
     "proseWrap": "always"
   },
   "dependencies": {
-    "@xmldom/xmldom": "0.9.9"
+    "@xmldom/xmldom": "0.9.10"
   },
   "devDependencies": {
     "@types/node": "25.5.2",
