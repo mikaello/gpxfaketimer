@@ -40,7 +40,7 @@
     "@xmldom/xmldom": "0.9.12"
   },
   "devDependencies": {
-    "@types/node": "25.9.5",
+    "@types/node": "25.9.6",
     "typescript": "7.0.2"
   }
 }
