@@ -4,7 +4,7 @@ import { resolve } from "path";
 export default defineConfig({
   resolve: {
     alias: {
-      "@mikaello/gpxfaketimer": resolve(__dirname, "../src/index.ts"),
+      "@mikaello/gpxfaketimer": resolve(import.meta.dirname, "../src/index.ts"),
     },
   },
 });
