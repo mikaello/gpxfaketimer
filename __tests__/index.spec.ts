@@ -44,6 +44,27 @@ const createGpxWithFiveTrackPoints = (
 </gpx>`.trim();
 };
 
+const multiSegmentGpx = `<?xml version="1.0" encoding="UTF-8"?>
+<gpx xmlns="http://www.topografix.com/GPX/1/1" version="1.1">
+  <trk><trkseg>
+    <trkpt lat="0" lon="0"><ele>1</ele><time>2000-01-01T00:00:00.000Z</time><extensions><note>keep</note></extensions></trkpt>
+    <trkpt lat="0" lon="0.001"/>
+  </trkseg></trk>
+  <trk><trkseg><trkpt lat="50" lon="50"/></trkseg></trk>
+</gpx>`;
+
+const readTrackTimes = (gpx: string) => {
+  const doc = new DOMParser().parseFromString(gpx, "text/xml");
+  return Array.from(doc.getElementsByTagName("trkpt"), (point) =>
+    Array.from(point.childNodes)
+      .filter(
+        (node): node is Element =>
+          node.nodeType === 1 && node.localName === "time",
+      )
+      .map((node) => node.textContent),
+  );
+};
+
 describe("evenly distributed timestamps", () => {
   const gpxOneTrackPointWithTimestamp = createGpxWithOneTrackPoint(
     `<time>${new Date(startExampleTime).toISOString()}</time>`,
@@ -83,6 +104,39 @@ describe("evenly distributed timestamps", () => {
       gpxFiveTrackPointsWithTimestamp,
     );
   });
+
+  test("timestamps every track and segment and replaces existing times", () => {
+    const result = createTimestampsEvenly(multiSegmentGpx, 0, 2000);
+    assert.deepStrictEqual(readTrackTimes(result), [
+      ["1970-01-01T00:00:00.000Z"],
+      ["1970-01-01T00:00:01.000Z"],
+      ["1970-01-01T00:00:02.000Z"],
+    ]);
+    assert.deepStrictEqual(
+      readTrackTimes(createTimestampsEvenly(result, 0, 2000)),
+      readTrackTimes(result),
+    );
+    assert.match(result, /<ele>1<\/ele><time>[^<]+<\/time><extensions>/);
+  });
+
+  test("uses UTF-8 when the input has no XML declaration", () => {
+    const result = createTimestampsEvenly(
+      '<gpx><trk><trkseg><trkpt lat="0" lon="0"/></trkseg></trk></gpx>',
+      0,
+      0,
+    );
+    assert.match(result, /^<\?xml version="1.0" encoding="UTF-8"\?>/);
+  });
+
+  test("preserves a GPX namespace prefix on new time elements", () => {
+    const input =
+      '<g:gpx xmlns:g="http://www.topografix.com/GPX/1/1"><g:trk><g:trkseg><g:trkpt lat="0" lon="0"/></g:trkseg></g:trk></g:gpx>';
+    const result = createTimestampsEvenly(input, 0, 0);
+    assert.match(
+      result,
+      /<g:trkpt[^>]*><g:time>1970-01-01T00:00:00.000Z<\/g:time><\/g:trkpt>/,
+    );
+  });
 });
 
 describe("helper function for creating distributed timestamps", () => {
@@ -111,7 +165,12 @@ describe("helper function for creating distributed timestamps", () => {
       60,
       80,
       100,
-    ]);  });
+    ]);
+  });
+
+  test("rejects a reversed time interval", () => {
+    assert.throws(() => getUniformDistribution(2, 100, 0), RangeError);
+  });
 });
 
 describe("haversineDistanceMeters", () => {
@@ -129,6 +188,11 @@ describe("haversineDistanceMeters", () => {
 describe("getSpeedBasedTimestamps", () => {
   test("single point returns only start time", () => {
     assert.deepStrictEqual(getSpeedBasedTimestamps([], 1000, 10), [1000]);
+  });
+
+  test("rejects invalid speed", () => {
+    assert.throws(() => getSpeedBasedTimestamps([100], 0, 0), RangeError);
+    assert.throws(() => getSpeedBasedTimestamps([100], 0, Infinity), RangeError);
   });
 
   test("calculates correct timestamps for known distance and speed in kmh", () => {
@@ -223,5 +287,20 @@ describe("speed-based timestamps in GPX", () => {
     ).getTime();
     // 10 mph > 10 km/h, so mph should finish sooner
     assert.ok(lastMph < lastKmh);
+  });
+
+  test("timestamps later segments without inventing travel across gaps", () => {
+    const result = createTimestampsFromSpeed(multiSegmentGpx, 0, 36);
+    const times = readTrackTimes(result).map(([time]) =>
+      new Date(time!).getTime(),
+    );
+    assert.strictEqual(times.length, 3);
+    assert.strictEqual(times[0], 0);
+    assert.ok(times[1] > times[0]);
+    assert.strictEqual(times[2], times[1]);
+    assert.deepStrictEqual(
+      readTrackTimes(createTimestampsFromSpeed(result, 0, 36)),
+      readTrackTimes(result),
+    );
   });
 });
