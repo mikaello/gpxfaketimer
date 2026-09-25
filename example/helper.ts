@@ -82,6 +82,7 @@ export const setupFileUpload = () => {
 
 export const generateTimestamps = () => {
   const timestampButton = document.getElementById("generate-timestamps-btn");
+  if (!timestampButton) return;
 
   timestampButton.onclick = () => {
     const gpx = (<HTMLTextAreaElement> (
@@ -97,15 +98,20 @@ export const generateTimestamps = () => {
     const gpxPaste = <HTMLTextAreaElement> (
       document.getElementById("gpx-with-timestamp")
     );
+    const errorNode = <HTMLElement> document.getElementById("error-message");
+    errorNode.textContent = "";
 
     const mode = (<HTMLInputElement> document.querySelector('input[name="timing-mode"]:checked'))?.value ?? "evenly";
 
     try {
       let timeGpx: string;
       if (mode === "speed") {
-        const speed = parseFloat(
+        const speed = Number(
           (<HTMLInputElement> document.getElementById("speed-value")).value,
-        ) || 10;
+        );
+        if (!Number.isFinite(speed) || speed <= 0) {
+          throw new RangeError("Speed must be a positive number.");
+        }
         const unit = (<HTMLSelectElement> document.getElementById("speed-unit")).value as "kmh" | "mph";
         timeGpx = createTimestampsFromSpeed(gpx, now, speed, unit);
       } else {
@@ -113,13 +119,8 @@ export const generateTimestamps = () => {
       }
       gpxPaste.value = timeGpx;
     } catch (e) {
-      const errorNode = document.createElement("p");
-      errorNode.textContent = "ERROR PARSING";
-      errorNode.style.fontWeight = "700";
-      errorNode.style.color = "red";
-
-      document.insertBefore(errorNode, gpxPaste);
-      gpxPaste.value = e;
+      errorNode.textContent = e instanceof Error ? e.message : String(e);
+      gpxPaste.value = "";
     }
     gpxPaste.style.visibility = "visible";
   };
