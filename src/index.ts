@@ -1,5 +1,48 @@
 export type SpeedUnit = "kmh" | "mph";
 
+const getTrackSegments = (gpxDoc: Document): Element[] =>
+  Array.from(gpxDoc.documentElement.getElementsByTagNameNS("*", "trk")).flatMap(
+    (track) => Array.from(track.getElementsByTagNameNS("*", "trkseg")),
+  );
+
+const getTrackPoints = (gpxDoc: Document): Element[] =>
+  getTrackSegments(gpxDoc).flatMap((segment) =>
+    Array.from(segment.getElementsByTagNameNS("*", "trkpt")),
+  );
+
+const setPointTime = (gpxDoc: Document, point: Element, timestamp: number) => {
+  const children = Array.from(point.childNodes).filter(
+    (node): node is Element => node.nodeType === 1,
+  );
+  const existingTime = children.find(
+    (child) =>
+      child.localName === "time" && child.namespaceURI === point.namespaceURI,
+  );
+  if (existingTime) {
+    existingTime.textContent = new Date(timestamp).toISOString();
+    return;
+  }
+
+  const qualifiedName = point.prefix ? `${point.prefix}:time` : "time";
+  const timeEl = gpxDoc.createElementNS(point.namespaceURI, qualifiedName);
+  timeEl.textContent = new Date(timestamp).toISOString();
+  const firstAfterElevation = children.find(
+    (child) => child.localName !== "ele",
+  );
+  point.insertBefore(timeEl, firstAfterElevation ?? null);
+};
+
+const serializeGpx = (gpxDoc: Document): string => {
+  const formattedGpx = new XMLSerializer().serializeToString(gpxDoc);
+  if (formattedGpx.startsWith("<?xml")) {
+    return formattedGpx;
+  }
+  return (
+    `<?xml version="1.0" encoding="${gpxDoc.inputEncoding ?? "UTF-8"}"?>\n` +
+    formattedGpx
+  );
+};
+
 /**
  * Calculate the distance in meters between two GPS coordinates using the Haversine formula.
  */
@@ -41,6 +84,9 @@ export const getSpeedBasedTimestamps = (
   speed: number,
   unit: SpeedUnit = "kmh",
 ): number[] => {
+  if (!Number.isFinite(speed) || speed <= 0) {
+    throw new RangeError("speed must be a positive finite number");
+  }
   const speedMs = unit === "mph" ? speed * 0.44704 : speed / 3.6;
   const timestamps = [startTime];
   for (const distance of distances) {
@@ -72,51 +118,46 @@ export const createTimestampsFromSpeed = (
     throw new Error("Could not parse GPX content");
   }
 
-  const track = gpxDoc.documentElement.getElementsByTagName("trk").item(0);
-  const trackSegment =
-    track?.getElementsByTagName("trkseg").item(0) ?? null;
-
-  if (trackSegment == null) {
+  const segments = getTrackSegments(gpxDoc);
+  if (segments.length === 0) {
     return gpxContent;
   }
 
-  const trackPoints = trackSegment.getElementsByTagName("trkpt");
-  const points = Array.from(trackPoints);
-
+  const points: Element[] = [];
   const distances: number[] = [];
-  for (let i = 1; i < points.length; i++) {
-    const prev = points[i - 1];
-    const curr = points[i];
-    const lat1 = parseFloat(prev.getAttribute("lat") ?? "0");
-    const lon1 = parseFloat(prev.getAttribute("lon") ?? "0");
-    const lat2 = parseFloat(curr.getAttribute("lat") ?? "0");
-    const lon2 = parseFloat(curr.getAttribute("lon") ?? "0");
-    distances.push(haversineDistanceMeters(lat1, lon1, lat2, lon2));
+  for (const segment of segments) {
+    const segmentPoints = Array.from(
+      segment.getElementsByTagNameNS("*", "trkpt"),
+    );
+    for (const point of segmentPoints) {
+      if (points.length > 0) {
+        const prev = points[points.length - 1];
+        if (point === segmentPoints[0]) {
+          // A segment break does not describe a travelled path.
+          distances.push(0);
+        } else {
+          const lat1 = parseFloat(prev.getAttribute("lat") ?? "0");
+          const lon1 = parseFloat(prev.getAttribute("lon") ?? "0");
+          const lat2 = parseFloat(point.getAttribute("lat") ?? "0");
+          const lon2 = parseFloat(point.getAttribute("lon") ?? "0");
+          distances.push(haversineDistanceMeters(lat1, lon1, lat2, lon2));
+        }
+      }
+      points.push(point);
+    }
   }
 
   const timeStamps = getSpeedBasedTimestamps(distances, startTime, speed, unit);
 
-  points.forEach((point, index) => {
-    const timeEl = gpxDoc.createElement("time");
-    timeEl.textContent = new Date(timeStamps[index]).toISOString();
-    point.appendChild(timeEl);
-  });
+  points.forEach((point, index) =>
+    setPointTime(gpxDoc, point, timeStamps[index]),
+  );
 
-  const serializer = new XMLSerializer();
-  const formatedGpx = serializer.serializeToString(gpxDoc);
-
-  if (formatedGpx.startsWith("<?xml")) {
-    return formatedGpx;
-  } else {
-    return (
-      `<?xml version="1.0" encoding="${gpxDoc.inputEncoding}"?>\n` +
-      serializer.serializeToString(gpxDoc)
-    );
-  }
+  return serializeGpx(gpxDoc);
 };
 
 /**
- * Annotate every track point in an GPX track with (evenly distributed) timestamps.
+ * Annotate every track point in a GPX track with evenly distributed timestamps.
  * @param gpxContent GPX content (XML string)
  * @param startTime start of GPX track (milliseconds since epoch)
  * @param endTime end of GPX track (milliseconds since epoch)
@@ -133,39 +174,22 @@ export const createTimestampsEvenly = (
     throw new Error("Could not parse GPX content");
   }
 
-  const track = gpxDoc.documentElement.getElementsByTagName("trk").item(0);
-  const trackSegment =
-    track?.getElementsByTagName("trkseg").item(0) ?? null;
-
-  if (trackSegment == null) {
+  const trackPoints = getTrackPoints(gpxDoc);
+  if (trackPoints.length === 0) {
     return gpxContent;
   }
 
-  const trackPoints = trackSegment.getElementsByTagName("trkpt");
   const timeStamps = getUniformDistribution(
     trackPoints.length,
     startTime,
     endTime,
   );
 
-  Array.from(trackPoints).forEach((point, index) => {
-    const timeEl = gpxDoc.createElement("time");
-    timeEl.textContent = new Date(timeStamps[index]).toISOString();
-    point.appendChild(timeEl);
-  });
+  trackPoints.forEach((point, index) =>
+    setPointTime(gpxDoc, point, timeStamps[index]),
+  );
 
-  const serializer = new XMLSerializer();
-  const formattedGpx = serializer.serializeToString(gpxDoc);
-
-  if (formattedGpx.startsWith("<?xml")) {
-    return formattedGpx;
-  } else {
-    // JSDom handles this differently than browser
-    return (
-      `<?xml version="1.0" encoding="${gpxDoc.inputEncoding}"?>\n` +
-      serializer.serializeToString(gpxDoc)
-    );
-  }
+  return serializeGpx(gpxDoc);
 };
 
 /**
@@ -181,11 +205,16 @@ export const getUniformDistribution = (
   intervalStart: number,
   intervalEnd: number,
 ) => {
+  if (!Number.isInteger(count) || count < 0) {
+    throw new RangeError("count must be a non-negative integer");
+  }
+  if (!Number.isFinite(intervalStart) || !Number.isFinite(intervalEnd)) {
+    throw new RangeError("start and end times must be finite numbers");
+  }
   if (intervalEnd < intervalStart) {
-    console.error(
+    throw new RangeError(
       `end time (${intervalEnd}) is smaller than start time (${intervalStart})`,
     );
-    return [];
   }
 
   if (count === 0) {
