@@ -103,8 +103,8 @@ Not specific for GPX, but just as helper functions
 
 _`getUniformDistribution(count: number, intervalStart: number, intervalEnd: number) => number[]`_:
 returns an array of length `count` with first element `intervalStart` and last
-element `intervalEnd`, all elements in between is evenly distributed between
-these extremeties.
+element `intervalEnd`, with all elements in between evenly distributed between
+these endpoints.
 
 ## Develop
 
