@@ -45,41 +45,61 @@ if (positionals.length === 0) {
   process.exit(1);
 }
 
+const fail = (message: string): never => {
+  process.stderr.write(`Error: ${message}\n`);
+  process.exit(1);
+};
+
 const parseTime = (value: string): number => {
+  if (value.trim() === "") {
+    fail("Invalid date/time: value is empty.");
+  }
   const asNumber = Number(value);
-  if (!isNaN(asNumber)) return asNumber;
+  if (Number.isFinite(asNumber)) return asNumber;
   const d = new Date(value);
-  if (isNaN(d.getTime())) {
-    throw new Error(`Invalid date/time: ${value}`);
+  if (!Number.isFinite(d.getTime())) {
+    fail(`Invalid date/time: ${value}`);
   }
   return d.getTime();
 };
 
 const inputFile = positionals[0];
-let gpxContent: string;
-try {
-  gpxContent = readFileSync(inputFile, "utf-8");
-} catch {
-  process.stderr.write(`Error: could not read file "${inputFile}"\n`);
-  process.exit(1);
-  throw new Error(); // unreachable, satisfies TS definite assignment
-}
+const gpxContent = (() => {
+  try {
+    return readFileSync(inputFile, "utf-8");
+  } catch {
+    return fail(`could not read file "${inputFile}"`);
+  }
+})();
 
-const startTime = values.start ? parseTime(values.start) : Date.now();
+const startTime =
+  values.start !== undefined ? parseTime(values.start) : Date.now();
 
 let result: string;
 if (values.speed !== undefined) {
-  const speed = parseFloat(values.speed);
-  if (isNaN(speed) || speed <= 0) {
-    process.stderr.write("Error: --speed must be a positive number.\n");
-    process.exit(1);
+  const speed = Number(values.speed);
+  if (!Number.isFinite(speed) || speed <= 0) {
+    fail("--speed must be a positive finite number.");
+  }
+  if (
+    values.unit !== undefined &&
+    values.unit !== "mph" &&
+    values.unit !== "kmh"
+  ) {
+    fail('--unit must be "kmh" or "mph".');
   }
   const unit = values.unit === "mph" ? "mph" : "kmh";
   result = createTimestampsFromSpeed(gpxContent, startTime, speed, unit);
 } else {
-  const endTime = values.end
+  if (values.unit !== undefined) {
+    fail("--unit requires --speed.");
+  }
+  const endTime = values.end !== undefined
     ? parseTime(values.end)
     : startTime + 60 * 60 * 1000;
+  if (endTime < startTime) {
+    fail("--end must be at or after --start.");
+  }
   result = createTimestampsEvenly(gpxContent, startTime, endTime);
 }
 

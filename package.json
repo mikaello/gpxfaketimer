@@ -12,7 +12,7 @@
     "clean": "rm -rf dist/",
     "build": "tsc -b",
     "prepublishOnly": "npm run build",
-    "test": "node --import './__tests__/setup.ts' --test '__tests__/**/*.spec.ts'"
+    "test": "npm run build && node --import './__tests__/setup.ts' --test '__tests__/**/*.spec.ts'"
   },
   "author": "mikaello",
   "license": "GPL-3.0",
